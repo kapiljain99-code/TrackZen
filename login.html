@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Trackzen</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="auth-body">
+    <div class="page-orbit orbit-one"></div>
+    <div class="page-orbit orbit-two"></div>
+    <main class="auth-shell">
+        <div class="theme-toggle-wrap">
+            <button id="theme-toggle" class="ghost-btn theme-toggle-btn" type="button">Switch to Light Mode</button>
+        </div>
+        <section class="auth-card animated-surface">
+            <div class="brand-block">
+                <p class="eyebrow">Trackzen</p>
+                <h1>Welcome back</h1>
+                <p class="subtext">Sign in, record what you learned, and keep your streak moving.</p>
+            </div>
+
+            <form id="login-form" class="form-card">
+                <label for="login-username">Username</label>
+                <input id="login-username" name="username" type="text" placeholder="Enter username" required>
+
+                <label for="login-password">Password</label>
+                <input id="login-password" name="password" type="password" placeholder="Enter password" required>
+
+                <button type="submit" class="primary-btn">Login</button>
+                <p id="login-message" class="message"></p>
+            </form>
+
+            <p class="auth-link">New here? <a href="/signup.html">Create an account</a></p>
+            <p class="auth-link">Forgot password? <a href="/reset.html">Reset it with your 4-digit PIN</a></p>
+        </section>
+    </main>
+
+    <script src="/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password | Trackzen</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="auth-body">
+    <div class="page-orbit orbit-one"></div>
+    <div class="page-orbit orbit-two"></div>
+    <main class="auth-shell">
+        <div class="theme-toggle-wrap">
+            <button id="theme-toggle" class="ghost-btn theme-toggle-btn" type="button">Switch to Light Mode</button>
+        </div>
+        <section class="auth-card animated-surface">
+            <div class="brand-block">
+                <p class="eyebrow">Trackzen</p>
+                <h1>Reset your password</h1>
+                <p class="subtext">Use your username and 4-digit recovery PIN to set a new password.</p>
+            </div>
+
+            <form id="reset-form" class="form-card">
+                <label for="reset-username">Username</label>
+                <input id="reset-username" name="username" type="text" placeholder="Enter username" required>
+
+                <label for="reset-recovery-pin">4-digit recovery PIN</label>
+                <input id="reset-recovery-pin" name="recovery_pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="Enter 4-digit PIN" required>
+
+                <label for="reset-new-password">New password</label>
+                <input id="reset-new-password" name="new_password" type="password" placeholder="Choose new password" required>
+
+                <button type="submit" class="primary-btn">Reset Password</button>
+                <p id="reset-message" class="message"></p>
+            </form>
+
+            <p class="auth-link"><a href="/login.html">Back to login</a></p>
+        </section>
+    </main>
+
+    <script src="/script.js"></script>
+</body>
+</html>

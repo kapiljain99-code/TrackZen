@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Trackzen</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="auth-body">
+    <div class="page-orbit orbit-one"></div>
+    <div class="page-orbit orbit-two"></div>
+    <main class="auth-shell">
+        <div class="theme-toggle-wrap">
+            <button id="theme-toggle" class="ghost-btn theme-toggle-btn" type="button">Switch to Light Mode</button>
+        </div>
+        <section class="auth-card animated-surface">
+            <div class="brand-block">
+                <p class="eyebrow">Trackzen</p>
+                <h1>Create your account</h1>
+                <p class="subtext">Pick one mission, save what you learn each day, and join the live leaderboard.</p>
+            </div>
+
+            <form id="signup-form" class="form-card">
+                <label for="signup-username">Username</label>
+                <input id="signup-username" name="username" type="text" placeholder="Choose username" required>
+
+                <label for="signup-password">Password</label>
+                <input id="signup-password" name="password" type="password" placeholder="Choose password" required>
+
+                <label for="signup-recovery-pin">4-digit recovery PIN</label>
+                <input id="signup-recovery-pin" name="recovery_pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="Choose 4-digit PIN" required>
+
+                <button type="submit" class="primary-btn">Sign Up</button>
+                <p id="signup-message" class="message"></p>
+            </form>
+
+            <p class="auth-link">Already have an account? <a href="/login.html">Login</a></p>
+            <p class="auth-link">Forget your password later? Use your recovery PIN on the <a href="/reset.html">reset page</a>.</p>
+        </section>
+    </main>
+
+    <script src="/script.js"></script>
+</body>
+</html>

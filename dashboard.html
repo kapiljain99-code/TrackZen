@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Trackzen</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dashboard-body">
+    <div class="page-orbit orbit-one"></div>
+    <div class="page-orbit orbit-two"></div>
+    <main class="dashboard-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Trackzen</p>
+                <h1 id="welcome-text">Your dashboard</h1>
+            </div>
+            <div class="topbar-actions">
+                <button id="theme-toggle" class="ghost-btn theme-toggle-btn" type="button">Switch to Light Mode</button>
+                <button id="logout-btn" class="ghost-btn">Logout</button>
+            </div>
+        </header>
+
+        <section class="dashboard-grid">
+            <article class="panel hero-panel animated-surface">
+                <div class="panel-header">
+                    <div>
+                        <p class="panel-label">Main mission</p>
+                        <h2 id="mission-display">No mission set yet</h2>
+                    </div>
+                    <span id="status-badge" class="status-badge">Not done today</span>
+                </div>
+
+                <form id="mission-form" class="mission-form">
+                    <input id="mission-input" type="text" placeholder="Set your mission, for example: Code Daily" maxlength="120" required>
+                    <button type="submit" class="primary-btn">Save Mission</button>
+                </form>
+                <p id="mission-message" class="message"></p>
+            </article>
+
+            <article class="panel stat-panel animated-surface">
+                <p class="panel-label">Current streak</p>
+                <div class="stat-aura fire-aura" aria-hidden="true"></div>
+                <div class="stat-ring">
+                    <div class="stat-ring-inner">
+                        <span class="stat-icon">FIRE</span>
+                        <h3 id="current-streak">0</h3>
+                    </div>
+                </div>
+                <p class="stat-caption">Keep the chain alive today.</p>
+            </article>
+
+            <article class="panel stat-panel animated-surface">
+                <p class="panel-label">Longest streak</p>
+                <div class="stat-aura best-aura" aria-hidden="true"></div>
+                <div class="stat-ring trophy-ring">
+                    <div class="stat-ring-inner">
+                        <span class="stat-icon">BEST</span>
+                        <h3 id="longest-streak">0</h3>
+                    </div>
+                </div>
+                <p class="stat-caption">Your strongest run so far.</p>
+            </article>
+
+            <article class="panel action-panel animated-surface">
+                <p class="panel-label">Daily check-in</p>
+                <div id="checkin-celebration" class="checkin-celebration" aria-hidden="true">
+                    <span class="celebration-text">Streak Saved</span>
+                    <span class="celebration-piece piece-1"></span>
+                    <span class="celebration-piece piece-2"></span>
+                    <span class="celebration-piece piece-3"></span>
+                    <span class="celebration-piece piece-4"></span>
+                    <span class="celebration-piece piece-5"></span>
+                    <span class="celebration-piece piece-6"></span>
+                </div>
+                <div class="checkin-stage" aria-hidden="true">
+                    <span class="checkin-wave wave-1"></span>
+                    <span class="checkin-wave wave-2"></span>
+                    <span class="checkin-wave wave-3"></span>
+                </div>
+                <button id="checkin-btn" class="primary-btn">Mark as Done Today</button>
+                <p id="checkin-message" class="message"></p>
+                <div class="level-card">
+                    <div class="level-topline">
+                        <p class="panel-label">Streak level</p>
+                        <span id="level-badge" class="level-badge">Level 1</span>
+                    </div>
+                    <p id="level-title" class="level-title">Starter Spark</p>
+                    <div class="level-progress">
+                        <div id="level-progress-fill" class="level-progress-fill"></div>
+                    </div>
+                    <p id="level-caption" class="level-caption">1 more day to reach Level 2</p>
+                </div>
+            </article>
+
+            <article class="panel learning-panel animated-surface">
+                <div class="panel-header">
+                    <div>
+                        <p class="panel-label">Learning journal</p>
+                        <h2>What did you learn today?</h2>
+                    </div>
+                </div>
+                <form id="learning-form" class="learning-form">
+                    <textarea id="learning-input" rows="6" maxlength="600" placeholder="Write one useful thing you learned today..."></textarea>
+                    <button type="submit" class="primary-btn">Save Today's Learning</button>
+                </form>
+                <p id="learning-message" class="message"></p>
+            </article>
+
+            <article class="panel leaderboard-panel animated-surface">
+                <div class="panel-header">
+                    <div>
+                        <p class="panel-label">Leaderboard</p>
+                        <h2>Real participants</h2>
+                    </div>
+                </div>
+                <div id="leaderboard-list" class="leaderboard-list"></div>
+            </article>
+
+            <article class="panel history-panel animated-surface">
+                <div class="panel-header">
+                    <div>
+                        <p class="panel-label">Your learning history</p>
+                        <h2>Journal from day one</h2>
+                    </div>
+                </div>
+                <div id="history-list" class="history-list"></div>
+            </article>
+        </section>
+    </main>
+
+    <script src="/script.js"></script>
+</body>
+</html>
