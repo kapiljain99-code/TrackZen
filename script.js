@@ -42,6 +42,78 @@ function initializeTheme() {
     });
 }
 
+function initializeCustomCursor() {
+    const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!supportsFinePointer || prefersReducedMotion) {
+        return;
+    }
+
+    const cursor = document.createElement("div");
+    cursor.className = "cursor-orb";
+
+    const trail = document.createElement("div");
+    trail.className = "cursor-trail";
+
+    document.body.append(cursor, trail);
+    document.body.classList.add("has-custom-cursor");
+
+    let pointerX = window.innerWidth / 2;
+    let pointerY = window.innerHeight / 2;
+    let trailX = pointerX;
+    let trailY = pointerY;
+    let isPointerVisible = false;
+
+    function setCursorPosition(element, x, y) {
+        element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    }
+
+    function animateTrail() {
+        trailX += (pointerX - trailX) * 0.18;
+        trailY += (pointerY - trailY) * 0.18;
+        setCursorPosition(trail, trailX, trailY);
+        window.requestAnimationFrame(animateTrail);
+    }
+
+    window.addEventListener("mousemove", (event) => {
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+
+        setCursorPosition(cursor, pointerX, pointerY);
+
+        if (!isPointerVisible) {
+            cursor.classList.add("is-visible");
+            trail.classList.add("is-visible");
+            isPointerVisible = true;
+        }
+    });
+
+    document.addEventListener("mouseover", (event) => {
+        const interactiveTarget = event.target.closest("a, button, input, textarea, label, .workspace-link, .ghost-btn, .primary-btn");
+        cursor.classList.toggle("is-active", Boolean(interactiveTarget));
+        trail.classList.toggle("is-active", Boolean(interactiveTarget));
+    });
+
+    document.addEventListener("mousedown", () => {
+        cursor.classList.add("is-pressed");
+        trail.classList.add("is-pressed");
+    });
+
+    document.addEventListener("mouseup", () => {
+        cursor.classList.remove("is-pressed");
+        trail.classList.remove("is-pressed");
+    });
+
+    document.addEventListener("mouseleave", () => {
+        cursor.classList.remove("is-visible");
+        trail.classList.remove("is-visible");
+        isPointerVisible = false;
+    });
+
+    animateTrail();
+}
+
 function triggerCheckinCelebration() {
     const celebration = document.getElementById("checkin-celebration");
     if (!celebration) {
@@ -532,8 +604,8 @@ function renderHistory(rows) {
                 </div>
                 <p class="history-text">${escapeHtml(entry.learned_today)}</p>
                 <div class="history-editor" hidden>
-                    <textarea class="history-editor-input" maxlength="600">${escapeHtml(entry.learned_today)}</textarea>
-                    <div class="history-editor-actions">
+                    <textarea class="history-editor-input" maxlength="600" data-original-value="${escapeHtml(entry.learned_today)}">${escapeHtml(entry.learned_today)}</textarea>
+                    <div class="history-editor-actions" hidden>
                         <button type="button" class="primary-btn history-save-btn">Save</button>
                         <button type="button" class="ghost-btn history-cancel-btn">Cancel</button>
                     </div>
@@ -627,6 +699,8 @@ function setHistoryEditMode(item, isEditing) {
     const text = item.querySelector(".history-text");
     const editButton = item.querySelector(".history-edit-btn");
     const inlineMessage = item.querySelector(".history-inline-message");
+    const editorActions = item.querySelector(".history-editor-actions");
+    const editorInput = item.querySelector(".history-editor-input");
 
     item.classList.toggle("is-editing", isEditing);
     if (editor) {
@@ -637,6 +711,12 @@ function setHistoryEditMode(item, isEditing) {
     }
     if (editButton) {
         editButton.hidden = isEditing;
+    }
+    if (editorActions) {
+        editorActions.hidden = true;
+    }
+    if (editorInput && isEditing) {
+        editorInput.dataset.originalValue = editorInput.value;
     }
     if (inlineMessage) {
         inlineMessage.textContent = "";
@@ -867,6 +947,22 @@ function handleHistoryEditing() {
             setButtonLoading(saveButton, false);
         }
     });
+
+    historyList.addEventListener("input", (event) => {
+        const input = event.target.closest(".history-editor-input");
+        if (!input) {
+            return;
+        }
+
+        const item = input.closest(".history-item");
+        const actions = item?.querySelector(".history-editor-actions");
+        if (!actions) {
+            return;
+        }
+
+        const originalValue = input.dataset.originalValue ?? "";
+        actions.hidden = input.value.trim() === originalValue.trim();
+    });
 }
 
 async function loadDashboard() {
@@ -987,5 +1083,6 @@ async function loadDashboard() {
 handleAuthForm("login-form", "/login", "login-message");
 handleAuthForm("signup-form", "/signup", "signup-message");
 initializeTheme();
+initializeCustomCursor();
 handleResetForm();
 loadDashboard();

@@ -103,28 +103,38 @@
                 <p id="mission-message" class="message"></p>
             </article>
 
-            <article class="panel stat-panel animated-surface">
-                <p class="panel-label">Current streak</p>
-                <div class="stat-aura fire-aura" aria-hidden="true"></div>
-                <div class="stat-ring">
-                    <div class="stat-ring-inner">
-                        <span class="stat-icon">FIRE</span>
-                        <h3 id="current-streak">0</h3>
+            <article class="panel streaks-panel animated-surface">
+                <div class="panel-header panel-header-centered">
+                    <div>
+                        <p class="panel-label">Streak overview</p>
+                        <h2>Your current and best runs</h2>
+                        <p class="section-copy">See both streak signals together so today’s progress and your best record stay in one place.</p>
                     </div>
                 </div>
-                <p class="stat-caption">Keep the chain alive today.</p>
-            </article>
-
-            <article class="panel stat-panel animated-surface">
-                <p class="panel-label">Longest streak</p>
-                <div class="stat-aura best-aura" aria-hidden="true"></div>
-                <div class="stat-ring trophy-ring">
-                    <div class="stat-ring-inner">
-                        <span class="stat-icon">BEST</span>
-                        <h3 id="longest-streak">0</h3>
+                <div class="streaks-duo">
+                    <div class="streak-stat-card">
+                        <p class="panel-label">Current streak</p>
+                        <div class="stat-aura fire-aura" aria-hidden="true"></div>
+                        <div class="stat-ring">
+                            <div class="stat-ring-inner">
+                                <span class="stat-icon">FIRE</span>
+                                <h3 id="current-streak">0</h3>
+                            </div>
+                        </div>
+                        <p class="stat-caption">Keep the chain alive today.</p>
+                    </div>
+                    <div class="streak-stat-card">
+                        <p class="panel-label">Longest streak</p>
+                        <div class="stat-aura best-aura" aria-hidden="true"></div>
+                        <div class="stat-ring trophy-ring">
+                            <div class="stat-ring-inner">
+                                <span class="stat-icon">BEST</span>
+                                <h3 id="longest-streak">0</h3>
+                            </div>
+                        </div>
+                        <p class="stat-caption">Your strongest run so far.</p>
                     </div>
                 </div>
-                <p class="stat-caption">Your strongest run so far.</p>
             </article>
 
             <article id="checkin-section" class="panel action-panel animated-surface">
@@ -189,6 +199,17 @@
                 <p id="learning-message" class="message"></p>
             </article>
 
+            <article id="history-section" class="panel history-panel animated-surface">
+                <div class="panel-header panel-header-centered">
+                    <div>
+                        <p class="panel-label">Your learning history</p>
+                        <h2>Journal from day one</h2>
+                        <p class="section-copy">A timeline of your progress, one useful lesson at a time.</p>
+                    </div>
+                </div>
+                <div id="history-list" class="history-list"></div>
+            </article>
+
             <article id="leaderboard-section" class="panel leaderboard-panel animated-surface">
                 <div class="panel-header panel-header-centered">
                     <div>
@@ -199,17 +220,6 @@
                 </div>
                 <p id="leaderboard-summary" class="leaderboard-summary">The board wakes up once people start checking in.</p>
                 <div id="leaderboard-list" class="leaderboard-list"></div>
-            </article>
-
-            <article id="history-section" class="panel history-panel animated-surface">
-                <div class="panel-header panel-header-centered">
-                    <div>
-                        <p class="panel-label">Your learning history</p>
-                        <h2>Journal from day one</h2>
-                        <p class="section-copy">A timeline of your progress, one useful lesson at a time.</p>
-                    </div>
-                </div>
-                <div id="history-list" class="history-list"></div>
             </article>
 
             <article id="settings-section" class="panel settings-panel animated-surface">
