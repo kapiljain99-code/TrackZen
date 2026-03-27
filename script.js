@@ -22,25 +22,23 @@ function applyTheme(theme) {
     const useLightTheme = theme === "light";
     document.body.classList.toggle("theme-light", useLightTheme);
 
-    const toggleButton = document.getElementById("theme-toggle");
-    if (toggleButton) {
+    document.querySelectorAll("#theme-toggle, #theme-toggle-settings").forEach((toggleButton) => {
         toggleButton.textContent = useLightTheme ? "Switch to Dark Mode" : "Switch to Light Mode";
-    }
+    });
+}
+
+function toggleTheme() {
+    const nextTheme = document.body.classList.contains("theme-light") ? "dark" : "light";
+    localStorage.setItem(themeKey, nextTheme);
+    applyTheme(nextTheme);
 }
 
 function initializeTheme() {
-    const savedTheme = localStorage.getItem(themeKey) || "dark";
+    const savedTheme = localStorage.getItem(themeKey) || "light";
     applyTheme(savedTheme);
 
-    const toggleButton = document.getElementById("theme-toggle");
-    if (!toggleButton) {
-        return;
-    }
-
-    toggleButton.addEventListener("click", () => {
-        const nextTheme = document.body.classList.contains("theme-light") ? "dark" : "light";
-        localStorage.setItem(themeKey, nextTheme);
-        applyTheme(nextTheme);
+    document.querySelectorAll("#theme-toggle, #theme-toggle-settings").forEach((toggleButton) => {
+        toggleButton.addEventListener("click", toggleTheme);
     });
 }
 
@@ -57,6 +55,85 @@ function triggerCheckinCelebration() {
     window.setTimeout(() => {
         celebration.classList.remove("is-active");
     }, 1100);
+}
+
+function animateNumber(element, nextValue) {
+    if (!element) {
+        return;
+    }
+
+    const target = Number(nextValue) || 0;
+    const start = Number(element.dataset.value || element.textContent || 0) || 0;
+    const startTime = performance.now();
+    const duration = 700;
+
+    element.dataset.value = String(target);
+
+    function step(currentTime) {
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.round(start + (target - start) * eased);
+        element.textContent = String(currentValue);
+
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    }
+
+    window.requestAnimationFrame(step);
+}
+
+function formatDayCount(value) {
+    const count = Number(value) || 0;
+    return `${count} day${count === 1 ? "" : "s"}`;
+}
+
+function formatLastActive(dateString) {
+    if (!dateString) {
+        return "No check-ins yet";
+    }
+
+    const parsedDate = new Date(`${dateString}T00:00:00`);
+    if (Number.isNaN(parsedDate.getTime())) {
+        return dateString;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffInMs = today.getTime() - parsedDate.getTime();
+    const diffInDays = Math.round(diffInMs / 86400000);
+
+    if (diffInDays === 0) {
+        return "Checked in today";
+    }
+
+    if (diffInDays === 1) {
+        return "Last active yesterday";
+    }
+
+    return `Last active ${parsedDate.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    })}`;
+}
+
+function getNextMilestone(streakCount) {
+    const milestones = [3, 7, 14, 21, 30, 45, 60, 90, 120];
+    const current = Number(streakCount) || 0;
+    const nextMilestone = milestones.find((milestone) => current < milestone) || null;
+
+    if (!nextMilestone) {
+        return {
+            title: "Archive favorite",
+            copy: "You are beyond the core milestone set now.",
+        };
+    }
+
+    const daysLeft = nextMilestone - current;
+    return {
+        title: `${nextMilestone}-day streak`,
+        copy: `${daysLeft} more day${daysLeft === 1 ? "" : "s"} to get there.`,
+    };
 }
 
 function calculateLevel(streakCount) {
@@ -106,6 +183,70 @@ function renderLevel(streakCount) {
     caption.textContent = levelData.caption;
 }
 
+function updateLearningMeta() {
+    const learningInput = document.getElementById("learning-input");
+    const lengthLabel = document.getElementById("learning-length");
+    if (!learningInput || !lengthLabel) {
+        return;
+    }
+
+    lengthLabel.textContent = `${learningInput.value.trim().length} / 600 characters`;
+}
+
+function renderOverview(user) {
+    const currentStreak = Number(user.current_streak) || 0;
+    const longestStreak = Number(user.longest_streak) || 0;
+    const milestone = getNextMilestone(currentStreak);
+    const currentStreakLabel = document.getElementById("overview-current-streak");
+    const currentStreakNote = document.getElementById("overview-streak-note");
+    const longestStreakLabel = document.getElementById("overview-longest-streak");
+    const bestNote = document.getElementById("overview-best-note");
+    const todayStatus = document.getElementById("overview-today-status");
+    const statusNote = document.getElementById("overview-status-note");
+    const milestoneLabel = document.getElementById("overview-next-milestone");
+    const milestoneNote = document.getElementById("overview-milestone-note");
+
+    if (currentStreakLabel) {
+        currentStreakLabel.textContent = formatDayCount(currentStreak);
+    }
+    if (currentStreakNote) {
+        currentStreakNote.textContent = currentStreak > 0
+            ? `You have shown up ${formatDayCount(currentStreak)} in a row.`
+            : "Start your first streak today.";
+    }
+
+    if (longestStreakLabel) {
+        longestStreakLabel.textContent = formatDayCount(longestStreak);
+    }
+    if (bestNote) {
+        bestNote.textContent = longestStreak > 0
+            ? `Your strongest run so far is ${formatDayCount(longestStreak)}.`
+            : "Your personal best will appear here.";
+    }
+
+    if (todayStatus) {
+        todayStatus.textContent = user.done_today
+            ? "Complete"
+            : user.can_check_in_today
+                ? "Ready to lock"
+                : "Waiting";
+    }
+    if (statusNote) {
+        statusNote.textContent = user.done_today
+            ? "Today is protected. You can still refine your learning note."
+            : user.can_check_in_today
+                ? "Your learning note is saved. Check in when you are ready."
+                : "Save what you learned to unlock check-in.";
+    }
+
+    if (milestoneLabel) {
+        milestoneLabel.textContent = milestone.title;
+    }
+    if (milestoneNote) {
+        milestoneNote.textContent = milestone.copy;
+    }
+}
+
 function setMessage(elementId, message, type = "") {
     const element = document.getElementById(elementId);
     if (!element) {
@@ -114,6 +255,28 @@ function setMessage(elementId, message, type = "") {
 
     element.textContent = message;
     element.className = `message ${type}`.trim();
+}
+
+function setButtonLoading(button, isLoading, loadingText = "Loading...") {
+    if (!button) {
+        return;
+    }
+
+    if (isLoading) {
+        if (!button.dataset.originalText) {
+            button.dataset.originalText = button.textContent.trim();
+        }
+        button.disabled = true;
+        button.classList.add("is-loading");
+        button.textContent = loadingText;
+        return;
+    }
+
+    button.disabled = button.id === "checkin-btn" && button.dataset.locked === "true";
+    button.classList.remove("is-loading");
+    if (button.dataset.originalText) {
+        button.textContent = button.dataset.originalText;
+    }
 }
 
 function escapeHtml(value) {
@@ -194,6 +357,7 @@ async function handleAuthForm(formId, endpoint, messageId) {
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         setMessage(messageId, "");
+        const submitButton = form.querySelector('button[type="submit"]');
 
         const formData = new FormData(form);
         const payload = {
@@ -224,6 +388,7 @@ async function handleAuthForm(formId, endpoint, messageId) {
         }
 
         try {
+            setButtonLoading(submitButton, true, endpoint === "/signup" ? "Creating account..." : "Signing in...");
             const data = await apiRequest(endpoint, {
                 method: "POST",
                 body: JSON.stringify(payload),
@@ -234,6 +399,8 @@ async function handleAuthForm(formId, endpoint, messageId) {
             window.location.href = "/dashboard.html";
         } catch (error) {
             setMessage(messageId, error.message, "error");
+        } finally {
+            setButtonLoading(submitButton, false);
         }
     });
 }
@@ -245,40 +412,84 @@ function redirectToLogin() {
 
 function renderUser(user) {
     document.getElementById("welcome-text").textContent = `Welcome, ${user.username}`;
+    const topbarSubtext = document.getElementById("topbar-subtext");
+    if (topbarSubtext) {
+        topbarSubtext.textContent = user.mission
+            ? `Current collection: ${user.mission}`
+            : "Set one clear mission, log one useful lesson, and keep your daily flow moving.";
+    }
     document.getElementById("mission-display").textContent = user.mission || "No mission set yet";
     document.getElementById("mission-input").value = user.mission || "";
-    document.getElementById("current-streak").textContent = user.current_streak;
-    document.getElementById("longest-streak").textContent = user.longest_streak;
+    animateNumber(document.getElementById("current-streak"), user.current_streak);
+    animateNumber(document.getElementById("longest-streak"), user.longest_streak);
     renderLevel(user.current_streak);
+    renderOverview(user);
 
     const learningInput = document.getElementById("learning-input");
     if (learningInput) {
         learningInput.value = user.learned_today || "";
     }
+    updateLearningMeta();
+
+    const focusModeCopy = document.getElementById("focus-mode-copy");
+    if (focusModeCopy) {
+        focusModeCopy.textContent = user.mission ? "Mission set and visible" : "Add one mission to anchor today";
+    }
+
+    const lastActiveCopy = document.getElementById("last-active-copy");
+    if (lastActiveCopy) {
+        lastActiveCopy.textContent = formatLastActive(user.last_active_date);
+    }
 
     const badge = document.getElementById("status-badge");
     const checkinButton = document.getElementById("checkin-btn");
+    const checkinHelper = document.getElementById("checkin-helper");
 
     if (user.done_today) {
         badge.textContent = "Done today";
         badge.classList.add("done");
         checkinButton.disabled = true;
+        checkinButton.dataset.locked = "true";
+        if (checkinHelper) {
+            checkinHelper.textContent = "Today is already locked in. You can still edit your learning entry below.";
+        }
+    } else if (!user.can_check_in_today) {
+        badge.textContent = "Write first";
+        badge.classList.remove("done");
+        checkinButton.disabled = true;
+        checkinButton.dataset.locked = "true";
+        if (checkinHelper) {
+            checkinHelper.textContent = "Add what you learned today before marking the day as done.";
+        }
     } else {
         badge.textContent = "Not done today";
         badge.classList.remove("done");
         checkinButton.disabled = false;
+        checkinButton.dataset.locked = "false";
+        if (checkinHelper) {
+            checkinHelper.textContent = "Your learning note is saved. You can lock in today whenever you are ready.";
+        }
     }
 }
 
 function renderLeaderboard(rows) {
     const container = document.getElementById("leaderboard-list");
+    const summary = document.getElementById("leaderboard-summary");
     if (!container) {
         return;
     }
 
     if (!rows.length) {
+        if (summary) {
+            summary.textContent = "The board wakes up once people start checking in.";
+        }
         container.innerHTML = "<p>No participants have checked in yet.</p>";
         return;
+    }
+
+    if (summary) {
+        const leader = rows[0];
+        summary.textContent = `${leader.username} is the most active right now with ${formatDayCount(leader.current_streak)}.`;
     }
 
     container.innerHTML = rows
@@ -312,9 +523,22 @@ function renderHistory(rows) {
 
     container.innerHTML = rows
         .map((entry) => `
-            <div class="history-item">
-                <p class="history-date">${formatHistoryDate(entry.date)}</p>
+            <div class="history-item" data-entry-date="${escapeHtml(entry.date)}">
+                <div class="history-item-top">
+                    <p class="history-date">${formatHistoryDate(entry.date)}</p>
+                    <div class="history-actions">
+                        <button type="button" class="ghost-btn history-edit-btn">Edit</button>
+                    </div>
+                </div>
                 <p class="history-text">${escapeHtml(entry.learned_today)}</p>
+                <div class="history-editor" hidden>
+                    <textarea class="history-editor-input" maxlength="600">${escapeHtml(entry.learned_today)}</textarea>
+                    <div class="history-editor-actions">
+                        <button type="button" class="primary-btn history-save-btn">Save</button>
+                        <button type="button" class="ghost-btn history-cancel-btn">Cancel</button>
+                    </div>
+                    <p class="message history-inline-message"></p>
+                </div>
             </div>
         `)
         .join("");
@@ -344,6 +568,7 @@ function handleResetForm() {
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         setMessage("reset-message", "");
+        const submitButton = form.querySelector('button[type="submit"]');
 
         const formData = new FormData(form);
         const payload = {
@@ -368,6 +593,7 @@ function handleResetForm() {
         }
 
         try {
+            setButtonLoading(submitButton, true, "Resetting password...");
             const data = await apiRequest("/reset-password", {
                 method: "POST",
                 body: JSON.stringify(payload),
@@ -376,6 +602,269 @@ function handleResetForm() {
             form.reset();
         } catch (error) {
             setMessage("reset-message", error.message, "error");
+        } finally {
+            setButtonLoading(submitButton, false);
+        }
+    });
+}
+
+function initializeLearningInput() {
+    const learningInput = document.getElementById("learning-input");
+    if (!learningInput) {
+        return;
+    }
+
+    updateLearningMeta();
+    learningInput.addEventListener("input", updateLearningMeta);
+}
+
+function setHistoryEditMode(item, isEditing) {
+    if (!item) {
+        return;
+    }
+
+    const editor = item.querySelector(".history-editor");
+    const text = item.querySelector(".history-text");
+    const editButton = item.querySelector(".history-edit-btn");
+    const inlineMessage = item.querySelector(".history-inline-message");
+
+    item.classList.toggle("is-editing", isEditing);
+    if (editor) {
+        editor.hidden = !isEditing;
+    }
+    if (text) {
+        text.hidden = isEditing;
+    }
+    if (editButton) {
+        editButton.hidden = isEditing;
+    }
+    if (inlineMessage) {
+        inlineMessage.textContent = "";
+        inlineMessage.className = "message history-inline-message";
+    }
+}
+
+function activateSectionLink(targetId) {
+    const sectionHash = targetId.startsWith("#") ? targetId : `#${targetId}`;
+    document.querySelectorAll(".workspace-link").forEach((link) => {
+        link.classList.toggle("is-active", link.getAttribute("href") === sectionHash);
+    });
+}
+
+function scrollToDashboardSection(sectionId, updateHistory = true) {
+    const normalizedId = sectionId.startsWith("#") ? sectionId.slice(1) : sectionId;
+    const section = document.getElementById(normalizedId);
+    if (!section) {
+        return false;
+    }
+
+    const yOffset = 18;
+    const targetTop = window.scrollY + section.getBoundingClientRect().top - yOffset;
+    window.scrollTo({
+        top: Math.max(targetTop, 0),
+        behavior: "smooth",
+    });
+
+    activateSectionLink(normalizedId);
+
+    if (updateHistory) {
+        window.history.replaceState(null, "", `#${normalizedId}`);
+    }
+
+    return true;
+}
+
+function handleDashboardNav() {
+    const navLinks = Array.from(document.querySelectorAll(".workspace-link"));
+    navLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+            const href = link.getAttribute("href");
+            if (!href || !href.startsWith("#")) {
+                return;
+            }
+
+            event.preventDefault();
+            scrollToDashboardSection(href);
+        });
+    });
+
+    const sections = Array.from(new Set(navLinks
+        .map((link) => {
+            const href = link.getAttribute("href");
+            return href ? document.querySelector(href) : null;
+        })
+        .filter(Boolean)));
+
+    if (!sections.length) {
+        return;
+    }
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            const visibleEntry = entries
+                .filter((entry) => entry.isIntersecting)
+                .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+
+            if (!visibleEntry) {
+                return;
+            }
+
+            const activeLink = navLinks.find((link) => link.getAttribute("href") === `#${visibleEntry.target.id}`);
+            if (!activeLink) {
+                return;
+            }
+
+            activateSectionLink(visibleEntry.target.id);
+        },
+        {
+            rootMargin: "-20% 0px -45% 0px",
+            threshold: [0.2, 0.45, 0.7],
+        }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    if (window.location.hash && scrollToDashboardSection(window.location.hash, false)) {
+        return;
+    }
+
+    activateSectionLink(navLinks[0]?.getAttribute("href") || "#mission-section");
+}
+
+function initializeDashboardMotion() {
+    const intro = document.getElementById("dashboard-intro");
+    if (intro) {
+        window.setTimeout(() => {
+            intro.classList.add("is-hidden");
+            document.body.classList.add("dashboard-ready");
+        }, 900);
+    } else {
+        document.body.classList.add("dashboard-ready");
+    }
+
+    const panels = Array.from(document.querySelectorAll(".catalog-hero, .overview-strip, .dashboard-grid .panel, .workspace-nav"));
+    const revealObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                }
+            });
+        },
+        {
+            threshold: 0.18,
+            rootMargin: "0px 0px -12% 0px",
+        }
+    );
+
+    panels.forEach((panel) => {
+        panel.classList.add("motion-panel");
+        revealObserver.observe(panel);
+
+        panel.addEventListener("pointermove", (event) => {
+            if (window.innerWidth < 900) {
+                return;
+            }
+
+            const rect = panel.getBoundingClientRect();
+            const offsetX = ((event.clientX - rect.left) / rect.width - 0.5) * 8;
+            const offsetY = ((event.clientY - rect.top) / rect.height - 0.5) * 8;
+            panel.style.setProperty("--tilt-x", `${-offsetY}deg`);
+            panel.style.setProperty("--tilt-y", `${offsetX}deg`);
+            panel.style.setProperty("--glow-x", `${((event.clientX - rect.left) / rect.width) * 100}%`);
+            panel.style.setProperty("--glow-y", `${((event.clientY - rect.top) / rect.height) * 100}%`);
+        });
+
+        panel.addEventListener("pointerleave", () => {
+            panel.style.removeProperty("--tilt-x");
+            panel.style.removeProperty("--tilt-y");
+            panel.style.removeProperty("--glow-x");
+            panel.style.removeProperty("--glow-y");
+        });
+    });
+
+    const progressBar = document.getElementById("scroll-progress-bar");
+    const scrollDrivenItems = Array.from(document.querySelectorAll(".catalog-hero, .overview-strip, .dashboard-grid .panel"));
+
+    function updateScrollMotion() {
+        const scrollableHeight = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+        const scrollProgress = Math.min(window.scrollY / scrollableHeight, 1);
+
+        if (progressBar) {
+            progressBar.style.transform = `scaleX(${scrollProgress})`;
+        }
+
+        scrollDrivenItems.forEach((item) => {
+            const rect = item.getBoundingClientRect();
+            const distanceFromCenter = rect.top + rect.height / 2 - window.innerHeight / 2;
+            const normalized = Math.max(-1, Math.min(1, distanceFromCenter / window.innerHeight));
+            item.style.setProperty("--scroll-shift", `${normalized * -18}px`);
+        });
+    }
+
+    updateScrollMotion();
+    window.addEventListener("scroll", updateScrollMotion, { passive: true });
+    window.addEventListener("resize", updateScrollMotion);
+}
+
+function handleHistoryEditing() {
+    const historyList = document.getElementById("history-list");
+    if (!historyList) {
+        return;
+    }
+
+    historyList.addEventListener("click", async (event) => {
+        const item = event.target.closest(".history-item");
+        if (!item) {
+            return;
+        }
+
+        if (event.target.closest(".history-edit-btn")) {
+            setHistoryEditMode(item, true);
+            const input = item.querySelector(".history-editor-input");
+            if (input) {
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+            return;
+        }
+
+        if (event.target.closest(".history-cancel-btn")) {
+            setHistoryEditMode(item, false);
+            return;
+        }
+
+        const saveButton = event.target.closest(".history-save-btn");
+        if (!saveButton) {
+            return;
+        }
+
+        const entryDate = item.dataset.entryDate;
+        const input = item.querySelector(".history-editor-input");
+        const inlineMessage = item.querySelector(".history-inline-message");
+        if (!entryDate || !input || !inlineMessage) {
+            return;
+        }
+
+        const learnedToday = input.value.trim();
+        if (!learnedToday) {
+            inlineMessage.textContent = "Write something meaningful before saving.";
+            inlineMessage.className = "message history-inline-message error";
+            return;
+        }
+
+        try {
+            setButtonLoading(saveButton, true, "Saving...");
+            const data = await apiRequest(`/learning-history/${entryDate}`, {
+                method: "PUT",
+                body: JSON.stringify({ learned_today: learnedToday }),
+            });
+            renderUser(data.user);
+            renderHistory(data.history);
+        } catch (error) {
+            inlineMessage.textContent = error.message;
+            inlineMessage.className = "message history-inline-message error";
+        } finally {
+            setButtonLoading(saveButton, false);
         }
     });
 }
@@ -405,10 +894,15 @@ async function loadDashboard() {
     }
 
     document.getElementById("logout-btn").addEventListener("click", redirectToLogin);
+    handleDashboardNav();
+    handleHistoryEditing();
+    initializeDashboardMotion();
+    initializeLearningInput();
 
     document.getElementById("mission-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         setMessage("mission-message", "");
+        const submitButton = event.currentTarget.querySelector('button[type="submit"]');
 
         const mission = document.getElementById("mission-input").value.trim();
         if (!mission) {
@@ -417,6 +911,7 @@ async function loadDashboard() {
         }
 
         try {
+            setButtonLoading(submitButton, true, "Saving mission...");
             const data = await apiRequest("/mission", {
                 method: "PUT",
                 body: JSON.stringify({ mission }),
@@ -428,13 +923,17 @@ async function loadDashboard() {
             renderLeaderboard(leaderboardData.leaderboard);
         } catch (error) {
             setMessage("mission-message", error.message, "error");
+        } finally {
+            setButtonLoading(submitButton, false);
         }
     });
 
     document.getElementById("checkin-btn").addEventListener("click", async () => {
         setMessage("checkin-message", "");
+        const checkinButton = document.getElementById("checkin-btn");
 
         try {
+            setButtonLoading(checkinButton, true, "Saving check-in...");
             const data = await apiRequest("/checkin", { method: "POST" });
             renderUser(data.user);
             setMessage("checkin-message", data.message, "success");
@@ -446,12 +945,15 @@ async function loadDashboard() {
             renderLeaderboard(leaderboardData.leaderboard);
         } catch (error) {
             setMessage("checkin-message", error.message, "error");
+        } finally {
+            setButtonLoading(checkinButton, false);
         }
     });
 
     document.getElementById("learning-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         setMessage("learning-message", "");
+        const submitButton = event.currentTarget.querySelector('button[type="submit"]');
 
         const learnedToday = document.getElementById("learning-input").value.trim();
         if (!learnedToday) {
@@ -460,6 +962,7 @@ async function loadDashboard() {
         }
 
         try {
+            setButtonLoading(submitButton, true, "Saving entry...");
             const data = await apiRequest("/today-learning", {
                 method: "PUT",
                 body: JSON.stringify({ learned_today: learnedToday }),
@@ -469,8 +972,14 @@ async function loadDashboard() {
 
             const historyData = await apiRequest("/learning-history");
             renderHistory(historyData.history);
+            const historySectionLink = document.querySelector('.workspace-link[href="#history-section"]');
+            if (historySectionLink) {
+                historySectionLink.classList.add("is-active");
+            }
         } catch (error) {
             setMessage("learning-message", error.message, "error");
+        } finally {
+            setButtonLoading(submitButton, false);
         }
     });
 }

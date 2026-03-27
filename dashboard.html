@@ -7,13 +7,24 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body class="dashboard-body">
+    <div class="scroll-progress" aria-hidden="true">
+        <span id="scroll-progress-bar" class="scroll-progress-bar"></span>
+    </div>
     <div class="page-orbit orbit-one"></div>
     <div class="page-orbit orbit-two"></div>
     <main class="dashboard-shell">
+        <div id="dashboard-intro" class="dashboard-intro" aria-hidden="true">
+            <div class="dashboard-intro-mark">
+                <span class="dashboard-intro-orb"></span>
+                <p class="dashboard-intro-label">Trackzen</p>
+            </div>
+            <h2 class="dashboard-intro-title">Built to make daily progress feel effortless.</h2>
+        </div>
         <header class="topbar">
             <div>
                 <p class="eyebrow">Trackzen</p>
                 <h1 id="welcome-text">Your dashboard</h1>
+                <p id="topbar-subtext" class="topbar-subtext">A curated library of your mission, streaks, and daily learning.</p>
             </div>
             <div class="topbar-actions">
                 <button id="theme-toggle" class="ghost-btn theme-toggle-btn" type="button">Switch to Light Mode</button>
@@ -21,14 +32,68 @@
             </div>
         </header>
 
+        <section class="catalog-hero animated-surface" aria-label="Workspace overview">
+            <div class="catalog-copy">
+                <p class="eyebrow">Popular workspace</p>
+                <h2>Browse your streak system like a well-organized flow library.</h2>
+                <p class="section-copy">Your mission, learning notes, activity history, and leaderboard all stay visible as reusable building blocks.</p>
+            </div>
+        </section>
+
+        <section class="overview-strip animated-surface" aria-label="Progress overview">
+            <article class="overview-card">
+                <p class="overview-label">Current streak</p>
+                <strong id="overview-current-streak">0 days</strong>
+                <p id="overview-streak-note" class="overview-copy">Start your first streak today.</p>
+            </article>
+            <article class="overview-card">
+                <p class="overview-label">Longest run</p>
+                <strong id="overview-longest-streak">0 days</strong>
+                <p id="overview-best-note" class="overview-copy">Your personal best will appear here.</p>
+            </article>
+            <article class="overview-card">
+                <p class="overview-label">Today's status</p>
+                <strong id="overview-today-status">Waiting</strong>
+                <p id="overview-status-note" class="overview-copy">Save what you learned to unlock check-in.</p>
+            </article>
+            <article class="overview-card">
+                <p class="overview-label">Next milestone</p>
+                <strong id="overview-next-milestone">3-day streak</strong>
+                <p id="overview-milestone-note" class="overview-copy">Keep the rhythm going.</p>
+            </article>
+        </section>
+
+        <nav class="workspace-nav animated-surface" aria-label="Dashboard sections">
+            <a class="workspace-link" href="#mission-section">Mission</a>
+            <a class="workspace-link" href="#checkin-section">Check-in</a>
+            <a class="workspace-link" href="#learning-section">Today</a>
+            <a class="workspace-link" href="#history-section">Activity</a>
+            <a class="workspace-link" href="#leaderboard-section">Leaderboard</a>
+            <a class="workspace-link" href="#settings-section">Settings</a>
+        </nav>
+
         <section class="dashboard-grid">
-            <article class="panel hero-panel animated-surface">
-                <div class="panel-header">
-                    <div>
-                        <p class="panel-label">Main mission</p>
-                        <h2 id="mission-display">No mission set yet</h2>
+            <article id="mission-section" class="panel hero-panel animated-surface">
+                <div class="hero-surface">
+                    <div class="panel-header">
+                        <div>
+                            <p class="panel-label">Main mission</p>
+                            <h2 id="mission-display">No mission set yet</h2>
+                            <p class="hero-copy">Keep your next meaningful action visible so today has a clear target.</p>
+                        </div>
+                        <span id="status-badge" class="status-badge">Not done today</span>
                     </div>
-                    <span id="status-badge" class="status-badge">Not done today</span>
+
+                    <div class="hero-mini-grid">
+                    <div class="hero-mini-card">
+                        <span class="hero-mini-label">Focus mode</span>
+                        <strong id="focus-mode-copy">One mission at a time</strong>
+                    </div>
+                    <div class="hero-mini-card">
+                        <span class="hero-mini-label">Last active</span>
+                        <strong id="last-active-copy">No check-ins yet</strong>
+                    </div>
+                </div>
                 </div>
 
                 <form id="mission-form" class="mission-form">
@@ -62,8 +127,11 @@
                 <p class="stat-caption">Your strongest run so far.</p>
             </article>
 
-            <article class="panel action-panel animated-surface">
+            <article id="checkin-section" class="panel action-panel animated-surface">
                 <p class="panel-label">Daily check-in</p>
+                <h2 class="section-title">Lock in today</h2>
+                <p class="section-copy">Protect your streak with a single tap, then move on to your next focused session.</p>
+                <p id="checkin-helper" class="action-helper">Write what you learned today first, then you can mark the day as done.</p>
                 <div id="checkin-celebration" class="checkin-celebration" aria-hidden="true">
                     <span class="celebration-text">Streak Saved</span>
                     <span class="celebration-piece piece-1"></span>
@@ -82,7 +150,10 @@
                 <p id="checkin-message" class="message"></p>
                 <div class="level-card">
                     <div class="level-topline">
-                        <p class="panel-label">Streak level</p>
+                        <div class="level-label-group">
+                            <p class="panel-label">Streak level</p>
+                            <p class="level-subtitle">Progress snapshot</p>
+                        </div>
                         <span id="level-badge" class="level-badge">Level 1</span>
                     </div>
                     <p id="level-title" class="level-title">Starter Spark</p>
@@ -93,11 +164,22 @@
                 </div>
             </article>
 
-            <article class="panel learning-panel animated-surface">
-                <div class="panel-header">
+            <article id="learning-section" class="panel learning-panel animated-surface">
+                <div class="panel-header panel-header-centered">
                     <div>
                         <p class="panel-label">Learning journal</p>
                         <h2>What did you learn today?</h2>
+                        <p class="section-copy">Capture one insight while it is fresh and build a record of steady growth.</p>
+                    </div>
+                </div>
+                <div class="learning-insights">
+                    <div class="insight-chip">
+                        <span class="insight-chip-label">Today's prompt</span>
+                        <strong id="learning-prompt">Write the one lesson that deserves a spot in your daily archive.</strong>
+                    </div>
+                    <div class="insight-chip">
+                        <span class="insight-chip-label">Entry size</span>
+                        <strong id="learning-length">0 / 600 characters</strong>
                     </div>
                 </div>
                 <form id="learning-form" class="learning-form">
@@ -107,24 +189,53 @@
                 <p id="learning-message" class="message"></p>
             </article>
 
-            <article class="panel leaderboard-panel animated-surface">
-                <div class="panel-header">
+            <article id="leaderboard-section" class="panel leaderboard-panel animated-surface">
+                <div class="panel-header panel-header-centered">
                     <div>
                         <p class="panel-label">Leaderboard</p>
                         <h2>Real participants</h2>
+                        <p class="section-copy">See who is showing up consistently and let that energy push your next streak.</p>
                     </div>
                 </div>
+                <p id="leaderboard-summary" class="leaderboard-summary">The board wakes up once people start checking in.</p>
                 <div id="leaderboard-list" class="leaderboard-list"></div>
             </article>
 
-            <article class="panel history-panel animated-surface">
-                <div class="panel-header">
+            <article id="history-section" class="panel history-panel animated-surface">
+                <div class="panel-header panel-header-centered">
                     <div>
                         <p class="panel-label">Your learning history</p>
                         <h2>Journal from day one</h2>
+                        <p class="section-copy">A timeline of your progress, one useful lesson at a time.</p>
                     </div>
                 </div>
                 <div id="history-list" class="history-list"></div>
+            </article>
+
+            <article id="settings-section" class="panel settings-panel animated-surface">
+                <div class="panel-header panel-header-centered">
+                    <div>
+                        <p class="panel-label">Settings</p>
+                        <h2>Your workspace controls</h2>
+                        <p class="section-copy">Adjust your dashboard experience and jump to account actions quickly.</p>
+                    </div>
+                </div>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <span class="settings-label">Theme</span>
+                        <p>Switch between dark and light mode whenever you want.</p>
+                        <button id="theme-toggle-settings" class="ghost-btn" type="button">Toggle Theme</button>
+                    </div>
+                    <div class="settings-card">
+                        <span class="settings-label">Account recovery</span>
+                        <p>Need to change your password later? Use your recovery PIN securely.</p>
+                        <a class="settings-link" href="/reset.html">Open reset page</a>
+                    </div>
+                    <div class="settings-card settings-card-wide">
+                        <span class="settings-label">Editing</span>
+                        <p>Your mission and learning entries stay editable. Use the edit button in your activity timeline to update any journal post.</p>
+                    </div>
+                </div>
             </article>
         </section>
     </main>

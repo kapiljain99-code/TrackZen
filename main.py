@@ -112,10 +112,17 @@ def create_tables() -> None:
     connection.close()
 
 
-@app.on_event("startup")
-def startup() -> None:
+def initialize_database() -> None:
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     create_tables()
+
+
+initialize_database()
+
+
+@app.on_event("startup")
+def startup() -> None:
+    initialize_database()
 
 
 def hash_password(password: str) -> str:
@@ -178,8 +185,16 @@ def get_today_learning_text(user_id: int) -> str:
     return row["learned_today"] if row and row["learned_today"] else ""
 
 
+def validate_entry_date(entry_date: str) -> str:
+    try:
+        return date.fromisoformat(entry_date).isoformat()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+
 def serialize_user(user: sqlite3.Row) -> dict:
     today = date.today().isoformat()
+    learned_today = get_today_learning_text(user["id"])
     return {
         "id": user["id"],
         "username": user["username"],
@@ -188,7 +203,8 @@ def serialize_user(user: sqlite3.Row) -> dict:
         "longest_streak": user["longest_streak"],
         "last_active_date": user["last_active_date"],
         "done_today": user["last_active_date"] == today,
-        "learned_today": get_today_learning_text(user["id"]),
+        "learned_today": learned_today,
+        "can_check_in_today": bool(learned_today.strip()) and user["last_active_date"] != today,
     }
 
 
@@ -260,6 +276,7 @@ def validate_recovery_pin(recovery_pin: str) -> str:
 
 @app.post("/signup")
 def signup(payload: SignupPayload) -> dict:
+    initialize_database()
     username = payload.username.strip()
     if len(username) < 3:
         raise HTTPException(status_code=400, detail="Username must be at least 3 characters.")
@@ -275,14 +292,21 @@ def signup(payload: SignupPayload) -> dict:
         connection.close()
         raise HTTPException(status_code=400, detail="Username already exists.")
 
-    connection.execute(
-        """
-        INSERT INTO users (username, password_hash, recovery_pin_hash, mission, current_streak, longest_streak, last_active_date)
-        VALUES (?, ?, ?, '', 0, 0, NULL)
-        """,
-        (username, hash_password(payload.password), hash_password(recovery_pin)),
-    )
-    connection.commit()
+    try:
+        connection.execute(
+            """
+            INSERT INTO users (username, password_hash, recovery_pin_hash, mission, current_streak, longest_streak, last_active_date)
+            VALUES (?, ?, ?, '', 0, 0, NULL)
+            """,
+            (username, hash_password(payload.password), hash_password(recovery_pin)),
+        )
+        connection.commit()
+    except sqlite3.IntegrityError:
+        connection.close()
+        raise HTTPException(status_code=400, detail="Username already exists.")
+    except sqlite3.Error as exc:
+        connection.close()
+        raise HTTPException(status_code=500, detail=f"Database error during signup: {exc}")
 
     user = connection.execute(
         "SELECT * FROM users WHERE username = ?",
@@ -371,6 +395,13 @@ def checkin(current_user: sqlite3.Row = Depends(parse_token)) -> dict:
     today = date.today()
     today_text = today.isoformat()
     last_active_text = current_user["last_active_date"]
+    learned_today = get_today_learning_text(current_user["id"]).strip()
+
+    if not learned_today:
+        raise HTTPException(
+            status_code=400,
+            detail="Add what you learned today before marking the day as done.",
+        )
 
     # Ignore repeated check-ins on the same day.
     if last_active_text == today_text:
@@ -446,6 +477,48 @@ def update_today_learning(
 def learning_history(current_user: sqlite3.Row = Depends(parse_token)) -> dict:
     return {
         "username": current_user["username"],
+        "history": get_learning_history(current_user["id"]),
+    }
+
+
+@app.put("/learning-history/{entry_date}")
+def update_learning_history_entry(
+    entry_date: str,
+    payload: LearningPayload,
+    current_user: sqlite3.Row = Depends(parse_token),
+) -> dict:
+    normalized_date = validate_entry_date(entry_date)
+    learned_today = payload.learned_today.strip()
+
+    connection = get_db_connection()
+    existing_entry = connection.execute(
+        "SELECT id FROM checkins WHERE user_id = ? AND date = ?",
+        (current_user["id"], normalized_date),
+    ).fetchone()
+
+    if not existing_entry:
+        connection.close()
+        raise HTTPException(status_code=404, detail="Learning entry not found.")
+
+    connection.execute(
+        """
+        UPDATE checkins
+        SET learned_today = ?
+        WHERE user_id = ? AND date = ?
+        """,
+        (learned_today, current_user["id"], normalized_date),
+    )
+    connection.commit()
+    updated_user = connection.execute(
+        "SELECT * FROM users WHERE id = ?",
+        (current_user["id"],),
+    ).fetchone()
+    connection.close()
+
+    return {
+        "message": "Learning entry updated.",
+        "entry": {"date": normalized_date, "learned_today": learned_today},
+        "user": serialize_user(updated_user),
         "history": get_learning_history(current_user["id"]),
     }
 

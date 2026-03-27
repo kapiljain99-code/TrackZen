@@ -13,26 +13,79 @@
         <div class="theme-toggle-wrap">
             <button id="theme-toggle" class="ghost-btn theme-toggle-btn" type="button">Switch to Light Mode</button>
         </div>
-        <section class="auth-card animated-surface">
-            <div class="brand-block">
+        <section class="auth-card auth-layout animated-surface">
+            <div class="auth-showcase">
                 <p class="eyebrow">Trackzen</p>
-                <h1>Welcome back</h1>
-                <p class="subtext">Sign in, record what you learned, and keep your streak moving.</p>
+                <p class="auth-context">Web • Account Management</p>
+                <h1>Reference-worthy streak flows for real life.</h1>
+                <p class="subtext">Track one mission, capture what you learned, and keep your routine moving through a cleaner flow.</p>
+                <div class="feature-list feature-list-spacious">
+                    <div class="feature-chip">Login</div>
+                    <div class="feature-chip">Recovery</div>
+                    <div class="feature-chip">Streak tracking</div>
+                    <div class="feature-chip">Learning log</div>
+                </div>
+                <div class="auth-preview-grid" aria-hidden="true">
+                    <article class="auth-preview-card auth-preview-card-large">
+                        <span class="auth-preview-label">Popular screen</span>
+                        <strong>Login</strong>
+                        <p>Fast return for people who already know what they came to do.</p>
+                    </article>
+                    <article class="auth-preview-card">
+                        <span class="auth-preview-label">UI element</span>
+                        <strong>Compact cards</strong>
+                        <p>Small blocks for routine context and quick decisions.</p>
+                    </article>
+                    <article class="auth-preview-card">
+                        <span class="auth-preview-label">Flow</span>
+                        <strong>Daily tracking</strong>
+                        <p>Write one lesson, lock the day, repeat.</p>
+                    </article>
+                </div>
+                <div class="auth-stat-row">
+                    <div class="auth-stat">
+                        <span class="auth-stat-value">Login flow</span>
+                        <span class="auth-stat-label">designed to get you back in without friction</span>
+                    </div>
+                    <div class="auth-stat">
+                        <span class="auth-stat-value">Progress view</span>
+                        <span class="auth-stat-label">mission, streak, and journal in one destination</span>
+                    </div>
+                </div>
             </div>
 
-            <form id="login-form" class="form-card">
-                <label for="login-username">Username</label>
-                <input id="login-username" name="username" type="text" placeholder="Enter username" required>
+            <div class="auth-form-panel">
+                <div class="brand-block">
+                    <p class="eyebrow">Welcome Back</p>
+                    <h2>Log in and keep the streak moving</h2>
+                    <p class="subtext">A focused sign-in for people who want to get in, update today, and move on.</p>
+                </div>
 
-                <label for="login-password">Password</label>
-                <input id="login-password" name="password" type="password" placeholder="Enter password" required>
+                <form id="login-form" class="form-card">
+                    <label for="login-username">Username</label>
+                    <input id="login-username" name="username" type="text" placeholder="Enter username" required>
 
-                <button type="submit" class="primary-btn">Login</button>
-                <p id="login-message" class="message"></p>
-            </form>
+                    <label for="login-password">Password</label>
+                    <input id="login-password" name="password" type="password" placeholder="Enter password" required>
 
-            <p class="auth-link">New here? <a href="/signup.html">Create an account</a></p>
-            <p class="auth-link">Forgot password? <a href="/reset.html">Reset it with your 4-digit PIN</a></p>
+                    <button type="submit" class="primary-btn">Login</button>
+                    <p id="login-message" class="message"></p>
+                </form>
+
+                <div class="auth-helper-grid">
+                    <div class="auth-helper-card">
+                        <span class="auth-helper-label">Fast return</span>
+                        <p>Sign in and your mission, streak, and journal history load in one place.</p>
+                    </div>
+                    <div class="auth-helper-card">
+                        <span class="auth-helper-label">Quiet routine</span>
+                        <p>Write one lesson, lock in the day, and keep your focus uncluttered.</p>
+                    </div>
+                </div>
+
+                <p class="auth-link">New here? <a href="/signup.html">Create an account</a></p>
+                <p class="auth-link">Forgot password? <a href="/reset.html">Reset it with your 4-digit PIN</a></p>
+            </div>
         </section>
     </main>
 
